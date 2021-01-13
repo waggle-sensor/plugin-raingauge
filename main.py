@@ -9,14 +9,20 @@ def request_sample(dev: serial.Serial) -> str:
     while True:
         dev.write(b"r\n")
         data = dev.readline()
+        
+        # if empty response, then retry request
         if data == b"":
             time.sleep(0.1)
             continue
+
+        # data *should be* valid ascii / unicode. if not, then retry
         try:
-            return data.decode()
+            line = data.decode()
         except UnicodeDecodeError:
             time.sleep(0.1)
             continue
+    
+        return line
 
 publish_names = {
     "Acc": "env.raingauge.acc",
@@ -41,11 +47,13 @@ def main():
     with serial.Serial(args.device, baudrate=9600, timeout=3.0) as dev:
         while True:
             time.sleep(args.rate)
+
             logging.info("requesting sample")
             sample = request_sample(dev)
             values = parse.parse_values(sample)
             logging.info("read values %s", values)
 
+            # publish each value in sample
             for key, name in publish_names.items():
                 try:
                     value = values[key]
