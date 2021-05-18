@@ -1,2 +1,2 @@
+https://github.com/waggle-sensor/pywaggle/archive/v0.40.5.zip
 pyserial
-https://github.com/waggle-sensor/pywaggle/archive/v0.39.1.zip
