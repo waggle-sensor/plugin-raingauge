@@ -1,12 +1,25 @@
 import typing
+import logging
+
+logger = logging.getLogger(__name__)
 
 valid_keys = {"Acc", "EventAcc", "TotalAcc", "RInt"}
+
+unit_scale = {
+    "mm": 1.0,
+    "in": 25.4,
+    "mmph": 1.0,
+    "iph": 25.4,
+}
 
 def parse_values(s: str) -> typing.Dict[str, float]:
     values = {}
     # line format looks like:
+    # metric units:
     # Acc  0.00 mm, EventAcc  0.00 mm, TotalAcc  1.11 mm, RInt  0.00 mmph
-    
+    # imperial units:
+    # Acc 0.000 in, EventAcc 0.000 in, TotalAcc 0.000 in, RInt 0.000 iph
+
     # split into individual key+value+units groups
     groups = s.split(",")
 
@@ -27,6 +40,12 @@ def parse_values(s: str) -> typing.Dict[str, float]:
         except ValueError:
             continue
 
-        values[key] = value
+        try:
+            scale_factor = unit_scale[fs[2]]
+        except KeyError:
+            logger.warning("invalid unit %r", fs[2])
+            continue
 
+        values[key] = value * scale_factor
+        
     return values
