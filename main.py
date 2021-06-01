@@ -41,7 +41,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO,
                         format="%(asctime)s %(message)s",
                         datefmt="%Y/%m/%d %H:%M:%S")
-    
+
     plugin.init()
 
     with serial.Serial(args.device, baudrate=9600, timeout=3.0) as dev:
