@@ -5,24 +5,28 @@ import parse
 import logging
 import waggle.plugin as plugin
 
+
 def request_sample(dev: serial.Serial) -> str:
     while True:
+        logging.debug("write read command")
         dev.write(b"r\n")
-        data = dev.readline()
-        
-        # if empty response, then retry request
-        if data == b"":
-            time.sleep(0.1)
-            continue
-
-        # data *should be* valid ascii / unicode. if not, then retry
-        try:
-            line = data.decode()
-        except UnicodeDecodeError:
-            time.sleep(0.1)
-            continue
-    
-        return line
+        while True:
+            data = dev.readline()
+            logging.debug("read data %s", data)
+            # if empty response, then retry request
+            if data == b"":
+                time.sleep(0.1)
+                break
+            # data *should be* valid ascii / unicode. if not, then retry
+            try:
+                line = data.decode()
+            except UnicodeDecodeError:
+                time.sleep(0.1)
+                continue
+            if not line.startswith("Acc"):
+                time.sleep(0.1)
+                continue
+            return line
 
 publish_names = {
     "Acc": "env.raingauge.acc",
