@@ -12,6 +12,7 @@ unit_scale = {
     "iph": 25.4,
 }
 
+
 def parse_values(s: str) -> typing.Dict[str, float]:
     values = {}
     # line format looks like:
@@ -47,5 +48,5 @@ def parse_values(s: str) -> typing.Dict[str, float]:
             continue
 
         values[key] = value * scale_factor
-        
+
     return values
