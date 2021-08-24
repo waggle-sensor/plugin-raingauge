@@ -28,12 +28,14 @@ def request_sample(dev: serial.Serial) -> str:
                 continue
             return line
 
+
 publish_names = {
     "Acc": "env.raingauge.acc",
     "EventAcc": "env.raingauge.event_acc",
     "TotalAcc": "env.raingauge.total_acc",
     "RInt": "env.raingauge.rint",
 }
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -42,9 +44,11 @@ def main():
     parser.add_argument("--rate", default=30.0, type=float, help="sampling rate")
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO,
-                        format="%(asctime)s %(message)s",
-                        datefmt="%Y/%m/%d %H:%M:%S")
+    logging.basicConfig(
+        level=logging.DEBUG if args.debug else logging.INFO,
+        format="%(asctime)s %(message)s",
+        datefmt="%Y/%m/%d %H:%M:%S",
+    )
 
     plugin.init()
 
@@ -64,6 +68,7 @@ def main():
                 except KeyError:
                     continue
                 plugin.publish(name, value=value)
+
 
 if __name__ == "__main__":
     main()
