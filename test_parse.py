@@ -31,9 +31,9 @@ class TestParse(unittest.TestCase):
 
     def test_conversion(self):
         r = parse.parse_values("Acc  1.23 in\n")
-        self.assertDictEqual(r, {"Acc": 1.23 * in2mm})
+        self.assertDictEqual(r, {"Acc": round(1.23 * in2mm, 2)})
         r = parse.parse_values("RInt 2.03 iph\n")
-        self.assertDictEqual(r, {"RInt": 2.03 * in2mm})
+        self.assertDictEqual(r, {"RInt": round(2.03 * in2mm, 2)})
 
 
 if __name__ == "__main__":
