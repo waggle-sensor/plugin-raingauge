@@ -6,26 +6,43 @@ import logging
 import waggle.plugin as plugin
 
 
+def validate_response(dev: serial.Serial, test) -> str:
+    """
+    Validate the response is not empty and matches `test` criteria.
+    Returns response on success, `None` on failure.
+    """
+    # try for up-to 3 seconds to get a response
+    wait = 0.1
+    loops = 30
+    for i in range(loops):
+        data = dev.readline()
+        logging.debug(f"read data [{data}]")
+        if data == b"":
+            time.sleep(wait)
+            break
+        try:
+            line = data.decode()
+        except UnicodeDecodeError:
+            time.sleep(wait)
+            continue
+        if not test(line):
+            time.sleep(wait)
+            continue
+        # all tests passed, return response
+        return line
+    return None
+
+
 def request_sample(dev: serial.Serial) -> str:
+    """
+    Attempt forever to send the read command until we get a response
+    Return command response on success.
+    """
     while True:
         logging.debug("write read command")
         dev.write(b"r\n")
-        while True:
-            data = dev.readline()
-            logging.debug("read data %s", data)
-            # if empty response, then retry request
-            if data == b"":
-                time.sleep(0.1)
-                break
-            # data *should be* valid ascii / unicode. if not, then retry
-            try:
-                line = data.decode()
-            except UnicodeDecodeError:
-                time.sleep(0.1)
-                continue
-            if not line.startswith("Acc"):
-                time.sleep(0.1)
-                continue
+        line = validate_response(dev, lambda x: x.startswith("Acc"))
+        if line:
             return line
 
 
