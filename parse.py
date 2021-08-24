@@ -14,6 +14,7 @@ unit_scale = {
 
 
 def parse_values(s: str) -> typing.Dict[str, float]:
+    """Returns the sensor values converted to metric units."""
     values = {}
     # line format looks like:
     # metric units:
@@ -47,6 +48,7 @@ def parse_values(s: str) -> typing.Dict[str, float]:
             logger.warning("invalid unit %r", fs[2])
             continue
 
-        values[key] = value * scale_factor
+        # sensor precision is 2 decimal units
+        values[key] = round(value * scale_factor, 2)
 
     return values
