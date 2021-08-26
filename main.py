@@ -21,7 +21,7 @@ def validate_response(dev: serial.Serial, test) -> str:
             time.sleep(wait)
             break
         try:
-            line = data.decode()
+            line = data.decode().strip()
         except UnicodeDecodeError:
             time.sleep(wait)
             continue
@@ -31,6 +31,19 @@ def validate_response(dev: serial.Serial, test) -> str:
         # all tests passed, return response
         return line
     return None
+
+
+def set_mode(dev: serial.Serial, mode: str):
+    """
+    Send the `mode` setting and attempt to verify (echo of `mode`).
+    Exception on failure.
+    """
+    for i in range(5):
+        logging.debug(f"writing command[try: {i}] '{mode}'")
+        dev.write("{}\n".format(mode).encode())
+        if validate_response(dev, lambda x: x == mode.lower()):
+            return
+    raise Exception(f"Unable to validate command '{mode}'")
 
 
 def request_sample(dev: serial.Serial) -> str:
@@ -70,6 +83,23 @@ def main():
     plugin.init()
 
     with serial.Serial(args.device, baudrate=9600, timeout=3.0) as dev:
+        # initialize the raingauge
+        try:
+            logging.debug("set to polling mode")
+            set_mode(dev, "p")
+        except:
+            pass
+        try:
+            logging.debug("set to high precision")
+            set_mode(dev, "h")
+        except:
+            pass
+        try:
+            logging.debug("set to metric mode")
+            set_mode(dev, "m")
+        except:
+            pass
+
         while True:
             time.sleep(args.rate)
 
