@@ -1,6 +1,6 @@
 name: "raingauge"
 description: "Simple plugin which publishes rain gauge data."
-version: "0.2.0"
+version: "0.2.1"
 namespace: "sage"
 source:
   architectures: ["linux/amd64", "linux/arm64", "linux/arm/v7"]

@@ -85,17 +85,17 @@ def main():
     with serial.Serial(args.device, baudrate=9600, timeout=3.0) as dev:
         # initialize the raingauge
         try:
-            logging.debug("set to polling mode")
+            logging.info("set to polling mode")
             set_mode(dev, "p")
         except:
             pass
         try:
-            logging.debug("set to high precision")
+            logging.info("set to high precision")
             set_mode(dev, "h")
         except:
             pass
         try:
-            logging.debug("set to metric mode")
+            logging.info("set to metric mode")
             set_mode(dev, "m")
         except:
             pass
