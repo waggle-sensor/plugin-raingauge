@@ -13,11 +13,11 @@ class MockRaingauge:
     def write(self, b):
         cmd = b.strip().lower()
         if cmd == b"p":
-            self.resp.append("p\n")
+            self.resp.append(b"p\n")
         elif cmd == b"h":
-            self.resp.append("h\n")
+            self.resp.append(b"h\n")
         elif cmd == b"m":
-            self.resp.append("m\n")
+            self.resp.append(b"m\n")
         elif cmd == b"r":
             self.resp.append(f"Acc  {uniform(0, 2):.2f} mm, EventAcc  {uniform(0, 2):.2f} mm, TotalAcc  {uniform(0, 2):.2f} mm, RInt  {uniform(0, 2):.2f} mmph\n".encode())
         return len(b)
