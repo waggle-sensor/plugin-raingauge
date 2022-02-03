@@ -128,8 +128,8 @@ def main():
     parser.add_argument("--debug", action="store_true", help="enable debug logs")
     parser.add_argument("--device", default="/dev/ttyUSB0", help="serial device to use")
     parser.add_argument("--baudrate", default=9600, type=int, help="baudrate to use")
-    parser.add_argument("--node-publish-interval", default=1.0, type=float, help="interval to publish data to node")
-    parser.add_argument("--beehive-publish-interval", default=30.0, type=float, help="interval to publish data to beehive")
+    parser.add_argument("--node-publish-interval", default=1.0, type=float, help="interval to publish data to node (negative values disable node publishing)")
+    parser.add_argument("--beehive-publish-interval", default=30.0, type=float, help="interval to publish data to beehive (negative values disable beehive publishing)")
     args = parser.parse_args()
 
     logging.basicConfig(

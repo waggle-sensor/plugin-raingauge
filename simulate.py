@@ -9,7 +9,7 @@ class MockRaingauge:
 
     def __init__(self):
         self.resp = []
-    
+
     def write(self, b):
         cmd = b.strip().lower()
         if cmd == b"p":
@@ -34,8 +34,8 @@ class MockRaingauge:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="enable debug logs")
-    parser.add_argument("--node-publish-interval", default=1.0, type=float, help="interval to publish data to node")
-    parser.add_argument("--beehive-publish-interval", default=30.0, type=float, help="interval to publish data to beehive")
+    parser.add_argument("--node-publish-interval", default=1.0, type=float, help="interval to publish data to node (negative values disable node publishing)")
+    parser.add_argument("--beehive-publish-interval", default=30.0, type=float, help="interval to publish data to beehive (negative values disable beehive publishing)")
     args = parser.parse_args()
 
     logging.basicConfig(
