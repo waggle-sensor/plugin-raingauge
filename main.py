@@ -92,7 +92,10 @@ def start_publishing(args, plugin, dev):
     sch = sched.scheduler(time.time, time.sleep)
 
     def sample_and_publish_task(scope, delay):
-        sch.enter(delay, 0, sample_and_publish_task, kwargs={"scope": scope, "delay": delay})
+        sch.enter(delay, 0, sample_and_publish_task, kwargs={
+            "scope": scope,
+            "delay": delay,
+        })
 
         logging.info("requesting sample for scope %s", scope)
         sample = request_sample(dev)
