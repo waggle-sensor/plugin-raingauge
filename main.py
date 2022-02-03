@@ -1,9 +1,10 @@
 import argparse
 import serial
-import time
 import parse
 import logging
-import waggle.plugin as plugin
+import sched
+import time
+from waggle.plugin import Plugin, get_timestamp
 
 
 def validate_response(dev: serial.Serial, test) -> str:
@@ -60,18 +61,87 @@ def request_sample(dev: serial.Serial) -> str:
 
 
 publish_names = {
-    "Acc": "env.raingauge.acc",
+    # "Acc": "env.raingauge.acc", # NOT PUBLISHING
     "EventAcc": "env.raingauge.event_acc",
     "TotalAcc": "env.raingauge.total_acc",
     "RInt": "env.raingauge.rint",
 }
+
+# We are not publishing the Acc values for the following reasons:
+#
+# 1. We believe is is more accurate for users who want accumulation
+#    in some interval to take the diff of the first and last TotalAcc.
+#
+# 2. The scale and meaning of Acc is sampling rate dependent and would
+#    require looking at two samples anyway.
+
+def start_publishing(args, plugin, dev):
+    """
+    start_publishing initializes the raingauge and begins sampling and publishing data
+    """
+    # initialize the raingauge
+    try:
+        logging.info("set to polling mode")
+        set_mode(dev, "p")
+    except:
+        pass
+    try:
+        logging.info("set to high precision")
+        set_mode(dev, "h")
+    except:
+        pass
+    try:
+        logging.info("set to metric mode")
+        set_mode(dev, "m")
+    except:
+        pass
+
+    sch = sched.scheduler(time.time, time.sleep)
+
+    def sample_and_publish_task(scope, delay):
+        sch.enter(delay, 0, sample_and_publish_task, kwargs={
+            "scope": scope,
+            "delay": delay,
+        })
+
+        logging.info("requesting sample for scope %s", scope)
+        timestamp = get_timestamp()
+        sample = request_sample(dev)
+        values = parse.parse_values(sample)
+        logging.debug("read values %s", values)
+
+        # publish each value in sample
+        for key, name in publish_names.items():
+            try:
+                value = values[key]
+            except KeyError:
+                continue
+            logging.info("publishing %s %s", name, value)
+            plugin.publish(name, value=value, scope=scope, timestamp=timestamp)
+
+    # setup and run publishing schedule
+    if args.node_publish_interval > 0:
+        sch.enter(0, 0, sample_and_publish_task, kwargs={
+            "scope": "node",
+            "delay": args.node_publish_interval,
+        })
+
+    if args.beehive_publish_interval > 0:
+        sch.enter(0, 0, sample_and_publish_task, kwargs={
+            "scope": "beehive",
+            "delay": args.beehive_publish_interval,
+        })
+
+    sch.run()
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="enable debug logs")
     parser.add_argument("--device", default="/dev/ttyUSB0", help="serial device to use")
-    parser.add_argument("--rate", default=30.0, type=float, help="sampling rate")
+    parser.add_argument("--baudrate", default=9600, type=int, help="baudrate to use")
+    parser.add_argument("--node-publish-interval", default=1.0, type=float, help="interval to publish data to node (negative values disable node publishing)")
+    parser.add_argument("--beehive-publish-interval", default=30.0, type=float, help="interval to publish data to beehive (negative values disable beehive publishing)")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -80,41 +150,8 @@ def main():
         datefmt="%Y/%m/%d %H:%M:%S",
     )
 
-    plugin.init()
-
-    with serial.Serial(args.device, baudrate=9600, timeout=3.0) as dev:
-        # initialize the raingauge
-        try:
-            logging.info("set to polling mode")
-            set_mode(dev, "p")
-        except:
-            pass
-        try:
-            logging.info("set to high precision")
-            set_mode(dev, "h")
-        except:
-            pass
-        try:
-            logging.info("set to metric mode")
-            set_mode(dev, "m")
-        except:
-            pass
-
-        while True:
-            time.sleep(args.rate)
-
-            logging.info("requesting sample")
-            sample = request_sample(dev)
-            values = parse.parse_values(sample)
-            logging.info("read values %s", values)
-
-            # publish each value in sample
-            for key, name in publish_names.items():
-                try:
-                    value = values[key]
-                except KeyError:
-                    continue
-                plugin.publish(name, value=value)
+    with Plugin() as plugin, serial.Serial(args.device, baudrate=args.baudrate, timeout=3.0) as dev:
+        start_publishing(args, plugin, dev)
 
 
 if __name__ == "__main__":
