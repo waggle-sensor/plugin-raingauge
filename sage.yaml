@@ -1,7 +1,7 @@
 name: "raingauge"
 description: "Simple plugin which publishes rain gauge data."
-version: "0.2.1"
+version: "0.4.0"
 namespace: "sage"
 source:
-  architectures: ["linux/amd64", "linux/arm64", "linux/arm/v7"]
+  architectures: ["linux/amd64", "linux/arm64"]
   url: "https://github.com/waggle-sensor/plugin-raingauge"
