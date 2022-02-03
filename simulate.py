@@ -23,6 +23,7 @@ class MockRaingauge:
         return len(b)
 
     def readline(self):
+        """readline returns the first queued up response or empty bytes to simulate timing out"""
         if len(self.resp) == 0:
             return b""
         b = self.resp[0]
