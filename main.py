@@ -4,7 +4,7 @@ import parse
 import logging
 import sched
 import time
-from waggle.plugin import Plugin
+from waggle.plugin import Plugin, get_timestamp
 
 
 def validate_response(dev: serial.Serial, test) -> str:
@@ -105,9 +105,10 @@ def start_publishing(args, plugin, dev):
         })
 
         logging.info("requesting sample for scope %s", scope)
+        timestamp = get_timestamp()
         sample = request_sample(dev)
         values = parse.parse_values(sample)
-        logging.info("read values %s", values)
+        logging.debug("read values %s", values)
 
         # publish each value in sample
         for key, name in publish_names.items():
@@ -115,7 +116,8 @@ def start_publishing(args, plugin, dev):
                 value = values[key]
             except KeyError:
                 continue
-            plugin.publish(name, value=value, scope=scope)
+            logging.info("publishing %s %s", name, value)
+            plugin.publish(name, value=value, scope=scope, timestamp=timestamp)
 
     # setup and run publishing schedule
     if args.node_publish_interval > 0:
