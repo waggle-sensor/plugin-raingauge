@@ -61,12 +61,19 @@ def request_sample(dev: serial.Serial) -> str:
 
 
 publish_names = {
-    "Acc": "env.raingauge.acc",
+    # "Acc": "env.raingauge.acc", # NOT PUBLISHING
     "EventAcc": "env.raingauge.event_acc",
     "TotalAcc": "env.raingauge.total_acc",
     "RInt": "env.raingauge.rint",
 }
 
+# We are not publishing the Acc values for the following reasons:
+#
+# 1. We believe is is more accurate for users who want accumulation
+#    in some interval to take the diff of the first and last TotalAcc.
+#
+# 2. The scale and meaning of Acc is sampling rate dependent and would
+#    require looking at two samples anyway.
 
 def start_publishing(args, plugin, dev):
     """
