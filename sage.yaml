@@ -1,7 +1,10 @@
 name: "raingauge"
-description: "Simple plugin which publishes rain gauge data."
-version: "0.4.0"
-namespace: "sage"
+description: "Plugin for the Hydreon RG-15 rain gauge. Periodically samples and publishes TotalAcc, EventAcc, and RInt values."
+keywords: "sensors, rain"
+authors: "Sean Shahkarami <sshahkarami@anl.gov>, Joe Swantek <joseph.swantek@northwestern.edu>"
+version: "0.4.1"
 source:
-  architectures: ["linux/amd64", "linux/arm64"]
+  architectures:
+    - linux/amd64
+    - linux/arm64
   url: "https://github.com/waggle-sensor/plugin-raingauge"
