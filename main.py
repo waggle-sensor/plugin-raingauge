@@ -1,3 +1,4 @@
+import os
 import argparse
 import serial
 import parse
@@ -117,7 +118,7 @@ def start_publishing(args, plugin, dev):
             except KeyError:
                 continue
             logging.info("publishing %s %s", name, value)
-            plugin.publish(name, value=value, scope=scope, timestamp=timestamp)
+            plugin.publish(name, value=value, scope=scope, meta={"zone": args.host}, timestamp=timestamp)
 
     # setup and run publishing schedule
     if args.node_publish_interval > 0:
@@ -142,6 +143,7 @@ def main():
     parser.add_argument("--baudrate", default=9600, type=int, help="baudrate to use")
     parser.add_argument("--node-publish-interval", default=1.0, type=float, help="interval to publish data to node (negative values disable node publishing)")
     parser.add_argument("--beehive-publish-interval", default=30.0, type=float, help="interval to publish data to beehive (negative values disable beehive publishing)")
+    parser.add_argument("--host", default=os.getenv("HOST", ""), type=str, help="full name of the computing host (e.g., 012345678901234-ws-nxcore)")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -149,6 +151,15 @@ def main():
         format="%(asctime)s %(message)s",
         datefmt="%Y/%m/%d %H:%M:%S",
     )
+
+    if args.host == "":
+        logging.error("--host is not set")
+        exit(1)
+    sp = args.host.split("-")
+    if len(sp) < 2:
+        logging.erorr(f'--host {args.host} is in wrong format')
+        exit(1)
+    args.host = sp[-1]
 
     with Plugin() as plugin, serial.Serial(args.device, baudrate=args.baudrate, timeout=3.0) as dev:
         start_publishing(args, plugin, dev)
